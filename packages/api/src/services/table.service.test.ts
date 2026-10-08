@@ -67,5 +67,41 @@ describe('TableService', () => {
             const result = await service.create({ number: 2, capacity: 2, restaurantId: 'r1' })
             expect(result.description).toBe('')
         })
+
+        it('should throw InvalidTableNumberError for zero, negative or non-integer numbers', async () => {
+            for (const number of [0, -1, 1.5, NaN]) {
+                await expect(service.create({ ...validInput, number }))
+                    .rejects.toThrow('Table number must be a positive integer')
+            }
+        })
+
+        it('should throw InvalidTableCapacityError for invalid capacity', async () => {
+            for (const capacity of [0, -2, 2.5]) {
+                await expect(service.create({ ...validInput, capacity }))
+                    .rejects.toThrow('Table capacity must be a positive integer')
+            }
+        })
+
+        it('should throw RestaurantIdRequiredError for empty restaurantId', async () => {
+            await expect(service.create({ ...validInput, restaurantId: ' ' }))
+                .rejects.toThrow('Restaurant ID is required')
+        })
+
+        it('should throw InvalidTableStatusError for invalid status', async () => {
+            await expect(service.create({ ...validInput, status: 'roto' }))
+                .rejects.toThrow('Invalid table status')
+        })
+
+        it('should throw DuplicatedTableNumberError when the number exists in the same restaurant', async () => {
+            await service.create(validInput)
+            await expect(service.create(validInput))
+                .rejects.toThrow('Table number is already in use in this restaurant')
+        })
+
+        it('should allow the same number in a different restaurant', async () => {
+            await service.create(validInput)
+            const other = await service.create({ ...validInput, restaurantId: 'r2' })
+            expect(other.restaurantId).toBe('r2')
+        })
     })
 })
