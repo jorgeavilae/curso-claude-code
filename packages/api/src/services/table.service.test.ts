@@ -195,6 +195,33 @@ describe('TableService', () => {
         })
     })
 
+    describe('changeStatus', () => {
+        it('should change only the status and refresh updatedAt', async () => {
+            const created = await service.create(validInput)
+
+            const result = await service.changeStatus(created.id, ' Reservada ')
+
+            expect(result.status).toBe('reservada')
+            expect(result.number).toBe(created.number)
+            expect(result.capacity).toBe(created.capacity)
+            expect(result.createdAt).toBe(created.createdAt)
+            expect(result.updatedAt >= created.updatedAt).toBe(true)
+            expect((await repo.findById(created.id))?.status).toBe('reservada')
+        })
+
+        it('should reject an invalid status without modifying the table', async () => {
+            const created = await service.create(validInput)
+            await expect(service.changeStatus(created.id, 'roto'))
+                .rejects.toThrow('Invalid table status')
+            expect((await repo.findById(created.id))?.status).toBe('libre')
+        })
+
+        it('should throw TableNotFoundError when the table does not exist', async () => {
+            await expect(service.changeStatus('missing', 'libre'))
+                .rejects.toThrow('Table not found')
+        })
+    })
+
     describe('delete', () => {
         it('should delete an existing table', async () => {
             const created = await service.create(validInput)
