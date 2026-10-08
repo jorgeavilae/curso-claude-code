@@ -136,7 +136,7 @@ export class TableService {
     private buildTable(props: {
         id: string
         number: number
-        description?: string
+        description: string | undefined
         capacity: number
         status: string
         restaurantId: string

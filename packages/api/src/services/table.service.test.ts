@@ -168,7 +168,7 @@ describe('TableService', () => {
 
         it('should find a table by id or return null', async () => {
             const [first] = await service.findByRestaurantId('r1')
-            expect(await service.findById(first.id)).toEqual(first)
+            expect(await service.findById(first!.id)).toEqual(first)
             expect(await service.findById('missing')).toBeNull()
         })
 
