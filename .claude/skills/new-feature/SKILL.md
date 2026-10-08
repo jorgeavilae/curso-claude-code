@@ -1,6 +1,6 @@
 ---
 name: new-feature
-description: Genera un plan de desarrollo con TDD estricto para una nueva feature de Resttek, pide aprobación al usuario, y si la aprueba la implementa en un git worktree. Avisa por Slack (MCP) al aceptarse el plan y al terminar la implementación. Úsala cuando el usuario pida una nueva feature, funcionalidad o endpoint.
+description: Genera un plan de desarrollo con TDD estricto para una nueva feature de Resttek, pide aprobación al usuario, y si la aprueba la implementa en un git worktree. Avisa por Slack (MCP) al aceptarse el plan y al terminar la implementación, siempre con confirmación previa del usuario (aprobar, no enviar o editar) y con un mensaje de una sola frase. Úsala cuando el usuario pida una nueva feature, funcionalidad o endpoint.
 argument-hint: <descripción de la feature>
 ---
 
@@ -35,7 +35,7 @@ La feature a desarrollar es: `$ARGUMENTS`. Si está vacía o es ambigua, pregunt
 2. Pregunta con `AskUserQuestion` si el plan le parece bien. Opciones: aprobar, modificar, cancelar.
 3. Si pide cambios, ajusta el plan y vuelve a preguntar. Si cancela, termina sin tocar nada.
 4. **No implementes nada hasta tener aprobación explícita.**
-5. Al recibir la aprobación, **avisa por Slack** (ver sección "Notificaciones") con: nombre de la feature, número de ciclos TDD y que se inicia la implementación.
+5. Al recibir la aprobación, propón un aviso por Slack (ver sección "Notificaciones", que exige confirmación del usuario antes de enviar): una frase corta con la feature y que se inicia la implementación.
 
 ## Fase 3: Implementación en un worktree
 
@@ -54,15 +54,20 @@ La feature a desarrollar es: `$ARGUMENTS`. Si está vacía o es ambigua, pregunt
 
 ## Fase 4: Cierre
 
-1. **Avisa por Slack** con: feature, rama y ruta del worktree, resultado de los tests (nº de tests y estado) y cualquier desviación respecto al plan.
-2. Informa al usuario en español con el mismo resumen y cómo integrar los cambios (merge de la rama, o `ExitWorktree` para conservarlo o eliminarlo; pregunta antes de borrar).
+1. Propón un aviso por Slack (con confirmación previa del usuario, ver "Notificaciones"): una frase corta que diga que la feature está implementada, sin detalles técnicos.
+2. Informa al usuario en español con el resumen completo (feature, rama y ruta del worktree, resultado de los tests con nº y estado, desviaciones respecto al plan) y cómo integrar los cambios (merge de la rama, o `ExitWorktree` para conservarlo o eliminarlo; pregunta antes de borrar).
 
 ## Notificaciones por Slack
 
 Se envían con el **MCP de Slack del proyecto** (`mcp__<servidor>__<herramienta>`; es un MCP propio que se está creando).
 
 - Busca la herramienta con `ToolSearch` (por ejemplo la query `slack`). Cárgala antes de llamarla.
-- Mensajes breves, en español, con el nombre de la feature y el hito (`Plan aprobado` / `Implementación terminada`).
+- **Mensaje corto**: una sola frase, en español, que diga solo la feature y el hito (`Plan aprobado` / `Implementación terminada`). Sin detalles técnicos de implementación (ficheros, ciclos TDD, ramas, rutas, nº de tests, etc.): solo la feature.
+- **Confirmación previa obligatoria**: antes de **cada** envío a Slack, muestra al usuario el mensaje exacto y pregunta con `AskUserQuestion`. Opciones:
+  - **Aprobar**: se envía tal cual.
+  - **No enviar**: se omite el envío (salta el paso) y el flujo continúa sin avisar.
+  - **Editar**: el usuario indica el nuevo texto (opción "Other" o petición posterior); muestra el mensaje editado y vuelve a pedir confirmación.
+- **No envíes nada a Slack sin que el usuario haya aprobado ese mensaje concreto.**
 - **Si el MCP no está disponible o la llamada falla**: no bloquees el flujo. Díselo al usuario claramente (no finjas que se envió) y continúa.
 - No incluyas secretos, credenciales ni el email del usuario en los mensajes.
 
