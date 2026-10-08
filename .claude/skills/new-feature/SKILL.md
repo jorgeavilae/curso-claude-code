@@ -14,7 +14,8 @@ La feature a desarrollar es: `$ARGUMENTS`. Si está vacía o es ambigua, pregunt
 
 1. Lee `CLAUDE.md` y los documentos relevantes de `docs/` (`arquitectura/`, `dominio/`, `revisiones/`).
 2. Explora el código afectado. **Identifica qué estilo de la API aplica**: hexagonal/DDD (`contexts/employee/`) o por capas (`restaurant`, `dish`, `ingredient`, `order`). Sigue el estilo del código vecino, no mezcles.
-3. Redacta el plan en español con estas secciones:
+3. **Usa la plantilla del plan**: lee `assets/TEMPLATE.md` (en la carpeta `assets` de esta skill, junto a este `SKILL.md`) y úsala como estructura base del plan. Respeta sus secciones y su orden; borra las que no apliquen y rellena el resto con datos reales de la feature. El apartado "Plan de implementación" de la plantilla se concreta con los ciclos TDD descritos abajo, y los requisitos siguientes se integran en las secciones equivalentes de la plantilla (alcance, diseño técnico, riesgos, tests). Si `assets/TEMPLATE.md` no existe, díselo al usuario y usa la estructura de abajo.
+4. Redacta el plan en español con estos contenidos (mapeados a la plantilla):
    - **Resumen y alcance** (qué entra y qué no).
    - **Paquetes y ficheros afectados** (rutas concretas, alias `@...` y extensión `.js` en imports).
    - **Ciclos TDD ordenados**: lista numerada de ciclos pequeños. Cada ciclo indica:
@@ -23,7 +24,7 @@ La feature a desarrollar es: `$ARGUMENTS`. Si está vacía o es ambigua, pregunt
      - 🔵 **Refactor**: limpieza posible sin romper tests.
    - **Riesgos y trampas** (p. ej. `errorHandler` decide el HTTP por nombre de clase; `OrderController` no usa `next`; cableado en ficheros de rutas; `mergeParams`; design system duplicado en las tres apps).
    - **Verificación final**: `npm test` y, si toca frontends, `npm run build -w @resttek/web-<app>`.
-4. **Reglas de TDD estricto** que el plan debe respetar:
+5. **Reglas de TDD estricto** que el plan debe respetar:
    - Ningún código de producción sin un test que falle antes por la razón correcta.
    - Un ciclo = un comportamiento. Primero se ve fallar el test, luego se escribe lo mínimo.
    - Capa API: tests unitarios Vitest junto al código, dobles en `mocks/`.
