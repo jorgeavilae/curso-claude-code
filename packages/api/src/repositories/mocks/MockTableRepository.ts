@@ -31,4 +31,11 @@ export class MockTableRepository implements TableRepository {
     async delete(id: string): Promise<void> {
         this.tables.delete(id)
     }
+
+    async occupyIfFree(id: string, updatedAt: string): Promise<boolean> {
+        const table = this.tables.get(id)
+        if (!table || table.status !== 'libre') return false
+        this.tables.set(id, { ...table, status: 'ocupada', updatedAt })
+        return true
+    }
 }

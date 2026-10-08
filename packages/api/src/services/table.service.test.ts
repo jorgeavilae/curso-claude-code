@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { TableService } from './table.service.js'
 import { normalizeTableStatus } from '@models/table.model.js'
 import { MockTableRepository } from '@repositories/mocks/MockTableRepository.js'
@@ -219,6 +219,37 @@ describe('TableService', () => {
         it('should throw TableNotFoundError when the table does not exist', async () => {
             await expect(service.changeStatus('missing', 'libre'))
                 .rejects.toThrow('Table not found')
+        })
+    })
+
+    describe('occupy', () => {
+        it('should occupy a free table', async () => {
+            const created = await service.create(validInput)
+
+            const result = await service.occupy(created.id)
+
+            expect(result.status).toBe('ocupada')
+            expect(result.id).toBe(created.id)
+            expect((await repo.findById(created.id))?.status).toBe('ocupada')
+        })
+
+        it('should throw TableNotAvailableError when the table is not free', async () => {
+            for (const status of ['ocupada', 'reservada']) {
+                const created = await service.create({ ...validInput, number: status === 'ocupada' ? 1 : 2, status })
+                await expect(service.occupy(created.id))
+                    .rejects.toThrow('Table is not available')
+            }
+        })
+
+        it('should throw TableNotAvailableError when the table is taken concurrently', async () => {
+            const created = await service.create(validInput)
+            vi.spyOn(repo, 'occupyIfFree').mockResolvedValue(false)
+
+            await expect(service.occupy(created.id)).rejects.toThrow('Table is not available')
+        })
+
+        it('should throw TableNotFoundError when the table does not exist', async () => {
+            await expect(service.occupy('missing')).rejects.toThrow('Table not found')
         })
     })
 

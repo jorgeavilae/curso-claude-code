@@ -174,6 +174,12 @@ export class TableNotFoundError extends AppError {
   }
 }
 
+export class TableNotAvailableError extends AppError {
+  constructor() {
+    super('Table is not available')
+  }
+}
+
 export class InvalidTableNumberError extends AppError {
   constructor() {
     super('Table number must be a positive integer')

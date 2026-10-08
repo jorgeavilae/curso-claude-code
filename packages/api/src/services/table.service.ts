@@ -7,6 +7,7 @@ import {
     InvalidTableCapacityError,
     InvalidTableNumberError,
     RestaurantIdRequiredError,
+    TableNotAvailableError,
     TableNotFoundError
 } from '@errors/DomainErrors.js'
 
@@ -90,6 +91,24 @@ export class TableService {
 
         await this.tableRepository.save(updated)
         return updated
+    }
+
+    async occupy(id: string): Promise<Table> {
+        const existing = await this.tableRepository.findById(id)
+        if (!existing) {
+            throw new TableNotFoundError()
+        }
+        if (existing.status !== 'libre') {
+            throw new TableNotAvailableError()
+        }
+
+        const updatedAt = new Date().toISOString()
+        const occupied = await this.tableRepository.occupyIfFree(id, updatedAt)
+        if (!occupied) {
+            throw new TableNotAvailableError()
+        }
+
+        return { ...existing, status: 'ocupada', updatedAt }
     }
 
     async findById(id: string): Promise<Table | null> {

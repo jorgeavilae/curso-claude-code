@@ -9,4 +9,9 @@ export interface TableRepository {
     findByNumber(restaurantId: string, number: number): Promise<Table | null>
     save(table: Table): Promise<void>
     delete(id: string): Promise<void>
+    /**
+     * Atomically sets the table to 'ocupada' only if it is currently 'libre'.
+     * Returns true when the table was occupied, false otherwise.
+     */
+    occupyIfFree(id: string, updatedAt: string): Promise<boolean>
 }
