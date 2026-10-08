@@ -104,4 +104,63 @@ describe('TableService', () => {
             expect(other.restaurantId).toBe('r2')
         })
     })
+
+    describe('update', () => {
+        const updateInput = { number: 5, description: 'Barra', capacity: 6, status: 'reservada' }
+
+        it('should update the table keeping id, restaurant and createdAt', async () => {
+            const created = await service.create(validInput)
+
+            const result = await service.update(created.id, updateInput)
+
+            expect(result).toMatchObject({
+                id: created.id,
+                number: 5,
+                description: 'Barra',
+                capacity: 6,
+                status: 'reservada',
+                restaurantId: 'r1',
+                createdAt: created.createdAt
+            })
+            expect(await repo.findById(created.id)).toEqual(result)
+        })
+
+        it('should throw TableNotFoundError when the table does not exist', async () => {
+            await expect(service.update('missing', updateInput))
+                .rejects.toThrow('Table not found')
+        })
+
+        it('should revalidate the data', async () => {
+            const created = await service.create(validInput)
+            await expect(service.update(created.id, { ...updateInput, capacity: 0 }))
+                .rejects.toThrow('Table capacity must be a positive integer')
+            await expect(service.update(created.id, { ...updateInput, status: 'roto' }))
+                .rejects.toThrow('Invalid table status')
+        })
+
+        it('should reject a number used by another table of the restaurant', async () => {
+            await service.create(validInput)
+            const second = await service.create({ ...validInput, number: 2 })
+            await expect(service.update(second.id, { ...updateInput, number: 1 }))
+                .rejects.toThrow('Table number is already in use in this restaurant')
+        })
+
+        it('should allow keeping the own number', async () => {
+            const created = await service.create(validInput)
+            const result = await service.update(created.id, { ...updateInput, number: 1 })
+            expect(result.number).toBe(1)
+        })
+    })
+
+    describe('delete', () => {
+        it('should delete an existing table', async () => {
+            const created = await service.create(validInput)
+            await service.delete(created.id)
+            expect(await repo.findById(created.id)).toBeNull()
+        })
+
+        it('should throw TableNotFoundError when the table does not exist', async () => {
+            await expect(service.delete('missing')).rejects.toThrow('Table not found')
+        })
+    })
 })

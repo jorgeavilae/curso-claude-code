@@ -168,6 +168,12 @@ export class InvalidTableStatusError extends AppError {
   }
 }
 
+export class TableNotFoundError extends AppError {
+  constructor() {
+    super('Table not found')
+  }
+}
+
 export class InvalidTableNumberError extends AppError {
   constructor() {
     super('Table number must be a positive integer')

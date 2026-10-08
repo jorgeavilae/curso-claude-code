@@ -16,4 +16,8 @@ export class MockTableRepository implements TableRepository {
     async save(table: Table): Promise<void> {
         this.tables.set(table.id, table)
     }
+
+    async delete(id: string): Promise<void> {
+        this.tables.delete(id)
+    }
 }

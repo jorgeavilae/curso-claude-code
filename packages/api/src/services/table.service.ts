@@ -6,7 +6,8 @@ import {
     DuplicatedTableNumberError,
     InvalidTableCapacityError,
     InvalidTableNumberError,
-    RestaurantIdRequiredError
+    RestaurantIdRequiredError,
+    TableNotFoundError
 } from '@errors/DomainErrors.js'
 
 export interface CreateTableDTO {
@@ -15,6 +16,13 @@ export interface CreateTableDTO {
     capacity: number
     status?: string
     restaurantId: string
+}
+
+export interface UpdateTableDTO {
+    number: number
+    description?: string
+    capacity: number
+    status: string
 }
 
 export class TableService {
@@ -36,6 +44,36 @@ export class TableService {
         await this.assertNumberIsAvailable(table)
         await this.tableRepository.save(table)
         return table
+    }
+
+    async update(id: string, dto: UpdateTableDTO): Promise<Table> {
+        const existing = await this.tableRepository.findById(id)
+        if (!existing) {
+            throw new TableNotFoundError()
+        }
+
+        const updated = this.buildTable({
+            id: existing.id,
+            number: dto.number,
+            description: dto.description,
+            capacity: dto.capacity,
+            status: dto.status,
+            restaurantId: existing.restaurantId,
+            createdAt: existing.createdAt,
+            updatedAt: new Date().toISOString()
+        })
+
+        await this.assertNumberIsAvailable(updated)
+        await this.tableRepository.save(updated)
+        return updated
+    }
+
+    async delete(id: string): Promise<void> {
+        const existing = await this.tableRepository.findById(id)
+        if (!existing) {
+            throw new TableNotFoundError()
+        }
+        await this.tableRepository.delete(id)
     }
 
     private async assertNumberIsAvailable(table: Table): Promise<void> {
