@@ -1,12 +1,14 @@
 ---
 name: new-feature
-description: Lee una issue de GitHub de Resttek (con gh), genera un plan de desarrollo con TDD estricto, lo publica como comentario de esa issue tras la aprobación del usuario, y si la aprueba lo implementa en un git worktree. Recibe el id de la issue. Úsala cuando el usuario pida planificar o desarrollar una issue, feature, funcionalidad o endpoint.
+description: Lee una issue de GitHub de Resttek (con gh), genera un plan de desarrollo con TDD estricto y lo publica como comentario de esa issue tras la aprobación del usuario. Solo planifica: no escribe código ni crea worktrees (la implementación la hace la skill implement-issue). Recibe el id de la issue. Úsala cuando el usuario pida planificar una issue, feature, funcionalidad o endpoint.
 argument-hint: <id de la issue>
 ---
 
 # new-feature
 
-Flujo en cuatro fases. No saltes ninguna ni cambies el orden.
+Esta skill **solo planifica**. No escribe código, no crea worktrees ni ramas y no hace commits. La implementación del plan la hace la skill `implement-issue`.
+
+Flujo en tres fases. No saltes ninguna ni cambies el orden.
 
 El id de la issue a planificar es: `$ARGUMENTS`. Debe ser un número (se admite `#12`; quita la almohadilla). Si está vacío o no es un número, pregunta al usuario con `AskUserQuestion` antes de planificar.
 
@@ -36,27 +38,13 @@ El id de la issue a planificar es: `$ARGUMENTS`. Debe ser un número (se admite 
 1. Muestra el plan completo al usuario.
 2. Pregunta con `AskUserQuestion` si el plan le parece bien. Opciones: aprobar, modificar, cancelar.
 3. Si pide cambios, ajusta el plan y vuelve a preguntar. Si cancela, termina sin tocar nada (no se publica nada en la issue).
-4. **No implementes nada hasta tener aprobación explícita.**
+4. **No implementes nada**, ni durante ni después de la aprobación: esta skill termina con el plan publicado.
 5. Al recibir la aprobación, **publica el plan como comentario de la issue** (ver sección "Publicar el plan en la issue") y después pasa a la Fase 3.
 
-## Fase 3: Implementación en un worktree
+## Fase 3: Cierre
 
-1. Comprueba que el directorio es un repositorio git (`git rev-parse --is-inside-work-tree`). Si no lo es, **detente y avisa al usuario**: los worktrees requieren git. No hagas `git init` sin su permiso.
-2. Crea el worktree con la herramienta `EnterWorktree` (carga su esquema con `ToolSearch` si hace falta), con una rama `feature/<slug-de-la-feature>`. Todos los cambios se hacen dentro de él, nunca en el árbol principal.
-3. Ejecuta `npm install` en el worktree si no hay `node_modules`.
-4. Ejecuta el baseline `npm test` y confirma que parte en verde. Si ya falla, informa al usuario antes de continuar.
-5. Para **cada ciclo del plan**, en orden:
-   1. Escribe solo el test (Red).
-   2. Ejecútalo (`cd packages/api && npx vitest run <fichero>`) y **comprueba que falla por la razón esperada**. Si pasa o falla por otro motivo, corrige el test antes de seguir.
-   3. Escribe el código mínimo (Green) y ejecuta de nuevo hasta que pase.
-   4. Refactoriza si procede y ejecuta `npm test` completo.
-6. Código y comentarios en inglés; textos de dominio y documentación en español.
-7. Al terminar los ciclos: `npm test` completo en verde, builds de los frontends afectados, y revisa si hay que actualizar `docs/`.
-8. Haz commit en la rama del worktree (mensajes claros, un commit por ciclo o agrupados de forma coherente). No hagas push ni abras PR salvo que el usuario lo pida.
-
-## Fase 4: Cierre
-
-1. Informa al usuario en español con el resumen completo (issue, feature, rama y ruta del worktree, resultado de los tests con nº y estado, desviaciones respecto al plan) y cómo integrar los cambios (merge de la rama, o `ExitWorktree` para conservarlo o eliminarlo; pregunta antes de borrar).
+1. Informa al usuario en español: issue planificada, resumen del plan (nº de ciclos y paquetes afectados) y URL del comentario publicado (o el fallo si `gh` no pudo publicarlo).
+2. Indica el siguiente paso: para implementar el plan, ejecutar `/implement-issue <id>`. No lo lances tú salvo que el usuario lo pida.
 
 ## Publicar el plan en la issue
 

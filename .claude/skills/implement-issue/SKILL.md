@@ -1,10 +1,12 @@
 ---
 name: implement-issue
-description: Implementa el plan de desarrollo comentado en una issue concreta de GitHub del repositorio, indicada por su número. Aplica TDD estricto, crea un git worktree para trabajar y hace un commit por cada tarea del plan. Si la feature afecta a varios agentes (paquetes), cada agente trabaja en su propio worktree. Úsala cuando el usuario pida implementar el plan de una issue.
+description: Implementa el plan de desarrollo ya publicado como comentario en una issue concreta de GitHub (generado antes con la skill new-feature), indicada por su número. Aplica TDD estricto, crea un git worktree para trabajar y hace un commit por cada tarea del plan. Si la feature afecta a varios agentes (paquetes), cada agente trabaja en su propio worktree. No planifica: si la issue no tiene plan, hay que ejecutar antes new-feature. Úsala cuando el usuario pida implementar el plan de una issue.
 argument-hint: <número de issue>
 ---
 
 # implement-issue
+
+Esta skill **solo implementa** un plan existente. La planificación (y la publicación del plan en la issue) es cosa de `new-feature`.
 
 La issue a implementar es: `$ARGUMENTS`.
 
@@ -14,7 +16,7 @@ Si está vacía o no es un número entero positivo, **detente y pide el número*
 
 1. Comprueba que `gh` está disponible y autenticado (`gh auth status`). Si no, avisa al usuario y detente.
 2. Lee la issue con sus comentarios: `gh issue view <n> --comments` (usa `--json title,body,state,comments` si necesitas procesarlo).
-3. Localiza el **plan** entre los comentarios (suele tener tareas/ciclos TDD, ficheros y verificación). Si hay varios, usa el más reciente que sea un plan completo; si hay ambigüedad, pregunta cuál. Si no hay plan, **detente y díselo al usuario**: no inventes uno (para eso existe `new-feature`).
+3. Localiza el **plan** entre los comentarios (suele tener tareas/ciclos TDD, ficheros y verificación). Si hay varios, usa el más reciente que sea un plan completo; si hay ambigüedad, pregunta cuál. Si no hay plan, **detente y díselo al usuario**: no inventes uno ni lo planifiques tú: indica al usuario que ejecute antes `/new-feature <n>`.
 4. Lee `CLAUDE.md` y los `docs/` relevantes, y explora el código afectado. Identifica el estilo de la API que aplica (hexagonal en `contexts/employee/`, por capas en el resto) y sigue el del código vecino.
 5. Extrae del plan una **lista numerada de tareas** (una por ciclo/comportamiento). Si una tarea es demasiado grande para un solo ciclo TDD, divídela y dilo.
 6. Muestra al usuario un resumen breve: título de la issue, tareas, paquetes/agentes afectados. Si la issue está `CLOSED`, o el plan contradice el código actual, avísalo y pregunta antes de seguir.
