@@ -76,6 +76,21 @@ export class TableService {
         await this.tableRepository.delete(id)
     }
 
+    async findById(id: string): Promise<Table | null> {
+        return this.tableRepository.findById(id)
+    }
+
+    async findByRestaurantId(restaurantId: string): Promise<Table[]> {
+        return this.tableRepository.findByRestaurantId(restaurantId)
+    }
+
+    async findAvailable(restaurantId: string, capacity?: number): Promise<Table[]> {
+        if (capacity !== undefined && (!Number.isInteger(capacity) || capacity <= 0)) {
+            throw new InvalidTableCapacityError()
+        }
+        return this.tableRepository.findAvailable(restaurantId, capacity ?? 1)
+    }
+
     private async assertNumberIsAvailable(table: Table): Promise<void> {
         const sameNumber = await this.tableRepository.findByNumber(table.restaurantId, table.number)
         if (sameNumber && sameNumber.id !== table.id) {

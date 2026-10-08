@@ -152,6 +152,49 @@ describe('TableService', () => {
         })
     })
 
+    describe('queries', () => {
+        beforeEach(async () => {
+            await service.create({ number: 3, capacity: 6, restaurantId: 'r1' })
+            await service.create({ number: 1, capacity: 2, restaurantId: 'r1' })
+            await service.create({ number: 2, capacity: 4, restaurantId: 'r1', status: 'ocupada' })
+            await service.create({ number: 4, capacity: 4, restaurantId: 'r1' })
+            await service.create({ number: 1, capacity: 8, restaurantId: 'r2' })
+        })
+
+        it('should find tables by restaurant ordered by number', async () => {
+            const result = await service.findByRestaurantId('r1')
+            expect(result.map(t => t.number)).toEqual([1, 2, 3, 4])
+        })
+
+        it('should find a table by id or return null', async () => {
+            const [first] = await service.findByRestaurantId('r1')
+            expect(await service.findById(first.id)).toEqual(first)
+            expect(await service.findById('missing')).toBeNull()
+        })
+
+        it('should return only free tables ordered by number when no capacity is given', async () => {
+            const result = await service.findAvailable('r1')
+            expect(result.map(t => t.number)).toEqual([1, 3, 4])
+        })
+
+        it('should return only free tables with capacity greater or equal than requested', async () => {
+            const result = await service.findAvailable('r1', 4)
+            expect(result.map(t => t.number)).toEqual([3, 4])
+        })
+
+        it('should not return tables of other restaurants', async () => {
+            const result = await service.findAvailable('r2', 2)
+            expect(result.map(t => t.capacity)).toEqual([8])
+        })
+
+        it('should throw InvalidTableCapacityError for an invalid requested capacity', async () => {
+            for (const capacity of [0, -1, 1.5, NaN]) {
+                await expect(service.findAvailable('r1', capacity))
+                    .rejects.toThrow('Table capacity must be a positive integer')
+            }
+        })
+    })
+
     describe('delete', () => {
         it('should delete an existing table', async () => {
             const created = await service.create(validInput)

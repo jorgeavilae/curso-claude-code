@@ -8,6 +8,17 @@ export class MockTableRepository implements TableRepository {
         return this.tables.get(id) || null
     }
 
+    async findByRestaurantId(restaurantId: string): Promise<Table[]> {
+        return Array.from(this.tables.values())
+            .filter(t => t.restaurantId === restaurantId)
+            .sort((a, b) => a.number - b.number)
+    }
+
+    async findAvailable(restaurantId: string, minCapacity: number): Promise<Table[]> {
+        return (await this.findByRestaurantId(restaurantId))
+            .filter(t => t.status === 'libre' && t.capacity >= minCapacity)
+    }
+
     async findByNumber(restaurantId: string, number: number): Promise<Table | null> {
         return Array.from(this.tables.values())
             .find(t => t.restaurantId === restaurantId && t.number === number) || null
